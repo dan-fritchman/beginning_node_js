@@ -6,10 +6,10 @@ Understanding Node.js
 */ 
 
 // Some setup 
-var assert = console.assert;
 // `console.log` gets tedious here
 var cl = console.log;
 cl("Running Chapter2");
+var assert = console.assert;
 
 var foo = 123;
 assert(foo === 123);
@@ -31,11 +31,11 @@ assert(foo%2 === 1);
 var foo = true;
 assert(foo);
 assert(true && true);
-console.log(true && false);
-console.log(true || false);
-console.log(false || false);
-console.log(!true);
-console.log(!false);
+assert(!(true && false));
+assert(true || false);
+assert(!(false || false));
+assert(!!true);
+assert(!false);
 
 var foo = [];
 foo.push(1);
@@ -45,14 +45,14 @@ console.log(foo);
 console.log(foo[0]);
 
 var foo = {};
-console.log(foo);
+// console.log(foo);
 foo.bar = 123;
-console.log(foo);
+// console.log(foo);
 
 var foo = {
     bar: 456
 };
-console.log(foo);
+// console.log(foo);
 
 var foo = {
     bar: 123,
@@ -62,7 +62,7 @@ var foo = {
     },
     bat: [1, 2, 3]
 };
-console.log(foo);
+// console.log(foo);
 
 var foo = {
     bar: 123,
@@ -76,17 +76,17 @@ var foo = {
         qux: 3
     }]
 };
-console.log(foo.bar);        // 123
-console.log(foo.bas[0].qux); // 1
-console.log(foo.bas[2].qux); // 2
+assert(foo.bar === 123);        // 123
+assert(foo.bas[0].qux === 1); // 1
+assert(foo.bas[2].qux === 3);
 
 function foot (){
     return 123;
 }
-console.log(foot());
+assert(foot() === 123);
 
 function bart (){ }
-console.log(bart());
+assert(bart() === undefined);
 
 (function immediately_execute () {
     console.log("Immediately executed!");
@@ -96,11 +96,9 @@ var foo = 123;
 (function () { // create a new scope
     var foo = 456;
 }) ();
-console.log(foo); // 123;
-
-var foo2 = function () {              // no function name given i.e. anonymous function
-    console.log('foo2');
-}
+assert(foo === 123); // 123;
+// no function name given i.e. anonymous function
+var foo2 = function () { }
 foo2(); // foo2
 
 function outer(arg){
@@ -152,25 +150,21 @@ inner2();
 var foo = { bas: 123 };
 var bar = foo;
 bar.bas = 456;
-console.log(foo.bas); // 456
+assert(foo.bas === 456); // 456
 
 var foob;
-console.log(foob); // undefined
+assert(foob === undefined); // undefined
 
 var foo = { bar: 123 };
-console.log(foo.bar); // 123
-console.log(foo.bas); // undefined
-
-
+assert(foo.bar === 123); // 123
+assert(foo.bas === undefined); // undefined
 
 // Exact Equality
+
 assert(5 == '5');   // true
 assert(!(5 === '5'));  // false
 assert(!('' == '0'));  // false
 assert('' == 0);    // true
-
-// cl(null == undefined);  // true
-// cl(null === undefined); // false
 
 // Truthy and Falsy
 
@@ -264,4 +258,44 @@ assert(qux.bar === 456);
 bas.bar = 789;
 assert(bas.bar === 789);
 assert(qux.bar === 456);
+
+function someClass(){
+    this.someProperty = 'some initial value';
+}
+someClass.prototype.someMethod = function (){
+    this.someProperty = 'modified value';
+}
+var instance = new someClass();
+assert(instance.someProperty === 'some initial value');
+instance.someMethod();
+assert(instance.someProperty === 'modified value');
+
+// Error Handling
+
+(function (){
+    var try_ran = false;
+    var catch_ran = false;
+    try {
+        try_ran = true;
+        throw new Error("Error Thrown");
+    }
+    catch(e) {
+        catch_ran = true;
+        assert(e.message === "Error Thrown");
+    }
+    finally {
+        assert(try_ran);
+        assert(catch_ran);
+    }
+})();
+
+// Async/ callback use-case 
+setTimeout(function () {
+    try {
+        throw new Error('Error thrown');
+    }
+    catch (e) {
+        assert(e.message === 'Error thrown');
+    }
+}, 1000);
 
