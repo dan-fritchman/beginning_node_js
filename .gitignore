@@ -1,6 +1,7 @@
 
 # Courtesy github/Node.gitignore
 key.pem
+.idea 
 
 # Logs
 logs
