@@ -359,3 +359,66 @@ Q.all([loadItem(1), loadItem(2)])
     })
     .done();
 
+function* infiniteSeq() {
+    let i = 0;
+    while (true) yield i++;
+}
+
+var iterator = infiniteSeq();
+for (var k = 0; k < 11; k++) {
+    var x = iterator.next();
+    assert(x['value'] === k);
+    assert(x['done'] === false);
+}
+
+function* gen() {
+    var bar = yield 'foo';
+    assert(bar === 'bar');
+}
+
+var iterator = gen();
+var foo = iterator.next();
+assert(foo.value === 'foo');
+var nextThing = iterator.next('bar');
+
+function* gen2() {
+    try {
+        yield 'foo';
+    } catch (err) {
+        assert(err.message === 'bar');
+    }
+}
+
+var iterator = gen2();
+var foo = iterator.next();
+assert(foo.value === 'foo');
+var nextThing = iterator.throw(new Error('bar'));
+
+
+// Promises and Generators
+
+Q.spawn(function* () {
+    var foo = yield Q.when('foo');
+    try {
+        yield Q.reject(new Error('bar'));
+    } catch (err) {
+        assert(err.message === 'bar');
+    }
+})
+
+var loadItem = Q.nbind(function (id, cb) {
+    setTimeout(function () {
+        cb(null, {id: id});
+    }, 500);
+});
+var loadItems = Q.async(function* (ids) {
+    var items = [];
+    for (var i = 0; i < ids.length; i++) {
+        items.push(yield loadItem(ids[i]));
+    }
+    return items;
+});
+Q.spawn(function* () {
+    yield loadItems([1, 2, 3]);
+});
+
